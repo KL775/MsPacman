@@ -14,8 +14,8 @@ public class nodeStates {
         this.currentState = game;
         this.possibleMoves = game.getPossibleMoves(game.getPacmanCurrentNodeIndex());
     }
-    public MOVE nextStateMove(){
-        int randomMove = (int)Math.floor(Math.random()*5);
-        return possibleMoves[randomMove];
+    public NodeState getNeighborState(){
+        NodeState nextNeighborState = new NodeState(this);
+        int randomIndex = Random.next(nextNeighborState.possibleMoves.length);
     }
 }
