@@ -18,6 +18,7 @@ import pacman.entries.pacman.Optimization.*;
 import static pacman.game.Constants.*;
 import pacman.entries.pacman.Uninformed.*;
 import pacman.entries.pacman.Optimization.climbingHills;
+import pacman.entries.pacman.EvolutionaryStrategies.*;
 
 /**
  * This class may be used to execute the game in timed or un-timed modes, with or without
@@ -61,7 +62,8 @@ public class Executor
 		//exec.runGameTimed(new DFS(), new StarterGhosts(), visual);
 		//exec.runGameTimed(new Astar2(), new StarterGhosts(), visual);
 		//exec.runGameTimed(new climbingHills(), new StarterGhosts(), visual);
-		exec.runGameTimed(new simulatedAnnealing(), new StarterGhosts(), visual);
+		//exec.runGameTimed(new simulatedAnnealing(), new StarterGhosts(), visual);
+		exec.runGameTimed(new EvoStrategy(), new StarterGhosts(), visual);
 //		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		//*/
 		
