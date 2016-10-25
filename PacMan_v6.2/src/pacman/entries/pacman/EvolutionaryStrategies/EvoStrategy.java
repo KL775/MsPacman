@@ -45,7 +45,8 @@ public class EvoStrategy extends Controller<MOVE> {
                         currentGame.advanceGame(move, new StarterGhosts().getMove(currentGame.copy(), -1));
                     }
                 }
-                Individuals.setFitness(evaluateCurrentState(currentGame));
+                //Individuals.setFitness(evaluateCurrentState(currentGame));
+                Individuals.setFitness(currentGame.getScore());
                 dupePopulation.add(Individuals);
             }
             currentPopulation.clear();
