@@ -130,15 +130,14 @@ public class GeneticCrossover extends Controller<MOVE> {
         int inactiveGhosts = 0;
         for (Constants.GHOST ghosts : Constants.GHOST.values()) {
             int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
-            if (currentState.getGhostEdibleTime(ghosts) > 0){
-                inactiveGhosts++;
-                if (closestGhostDist > currentDist){
-                    closestScaredGhostDist = currentDist;
+            if (currentState.getGhostEdibleTime(ghosts) > 0) {
+                if (currentDist < closestScaredGhostDist){
+                    closestGhostDist = currentDist;
                 }
-                else{
-                    closestScaredGhostDist = closestGhostDist;
-                }
-                if (closestGhostDist > currentDist){
+                break;
+            }
+            else{
+                if (currentDist < closestGhostDist){
                     closestGhostDist = currentDist;
                 }
             }

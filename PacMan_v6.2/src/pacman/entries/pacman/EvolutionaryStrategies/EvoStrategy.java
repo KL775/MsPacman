@@ -109,17 +109,15 @@ public class EvoStrategy extends Controller<MOVE> {
         for (Constants.GHOST ghosts : Constants.GHOST.values()) {
             int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
             if (currentState.getGhostEdibleTime(ghosts) > 0) {
-                inactiveGhosts++;
-                if (closestGhostDist > currentDist) {
-                    closestScaredGhostDist = currentDist;
-
-                } else {
-                    closestScaredGhostDist = closestGhostDist;
+                if (currentDist < closestScaredGhostDist){
+                    closestGhostDist = currentDist;
                 }
                 break;
             }
-            if (closestGhostDist > currentDist) {
-                closestGhostDist = currentDist;
+            else{
+                if (currentDist < closestGhostDist){
+                    closestGhostDist = currentDist;
+                }
             }
         }
         if (inactiveGhosts == 0) {

@@ -60,10 +60,10 @@ public class Executor
 		//exec.runGameTimed(new BFS(), new StarterGhosts(), visual);
         //exec.runGameTimed(new IterativeDeepening(),new StarterGhosts(), visual);
 		//exec.runGameTimed(new DFS(), new StarterGhosts(), visual);
-		exec.runGameTimed(new Astar2(), new StarterGhosts(), visual);
+		//exec.runGameTimed(new Astar2(), new StarterGhosts(), visual);
 		//exec.runGameTimed(new climbingHills(), new StarterGhosts(), visual);
 		//exec.runGameTimed(new simulatedAnnealing(), new StarterGhosts(), visual);
-		//exec.runGameTimed(new EvoStrategy(), new StarterGhosts(), visual);
+		exec.runGameTimed(new EvoStrategy(), new StarterGhosts(), visual);
 		//exec.runGameTimed(new GeneticCrossover(), new StarterGhosts(), visual);
 //		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		//*/
