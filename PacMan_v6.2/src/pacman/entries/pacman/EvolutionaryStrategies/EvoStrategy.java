@@ -103,7 +103,7 @@ public class EvoStrategy extends Controller<MOVE> {
     }
 
     public double evaluateCurrentState(Game currentState) {
-        int GhostPanicDist = 200;
+        int GhostPanicDist = 300;
         int closestGhostDist = Integer.MAX_VALUE;
         int closestScaredGhostDist = Integer.MAX_VALUE;
         int inactiveGhosts = 0;
@@ -113,7 +113,6 @@ public class EvoStrategy extends Controller<MOVE> {
                 if (currentDist < closestScaredGhostDist){
                     closestGhostDist = currentDist;
                 }
-                break;
             }
             else{
                 if (currentDist < closestGhostDist){
@@ -133,6 +132,6 @@ public class EvoStrategy extends Controller<MOVE> {
         System.out.println(closestGhostDist);
         int pillsLeft = currentState.getNumberOfPills() - currentState.getNumberOfActivePills();
         int powPillsLeft = currentState.getNumberOfPowerPills() - currentState.getNumberOfActivePowerPills();
-        return (currentState.getScore() + -4 * closestGhostDist + 50 * closestScaredGhostDist + -2 * pillsLeft + -3.5 * powPillsLeft)*currentState.getPacmanNumberOfLivesRemaining();
+        return (currentState.getScore() + -6 * closestGhostDist + 6 * closestScaredGhostDist + -2 * pillsLeft + -3.5 * powPillsLeft)*currentState.getPacmanNumberOfLivesRemaining();
     }
 };

@@ -30,7 +30,6 @@ public class Astar2 extends Controller<MOVE> {
                     inactiveGhosts++;
                     closestGhostDist = currentDist;
                 }
-                break;
             }
             else{
                 if (currentDist < closestGhostDist){
