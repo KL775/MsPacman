@@ -24,7 +24,7 @@ public class simulatedAnnealing extends Controller<MOVE> {
         nodeStates currentState = new nodeStates(initState);
         int randIndex = randomGen.nextInt(currentState.getPossibleMoves().length);
         MOVE randMove = currentState.getPossibleMoves()[randIndex];
-        Game advState = currentState.getCurrentState();
+        Game advState = currentState.getCurrentState().copy();
         for (int i = 0; i < 4; ++i){
             advState.advanceGame(randMove, new StarterGhosts().getMove(currentState.getCurrentState().copy(), -1));
         }
