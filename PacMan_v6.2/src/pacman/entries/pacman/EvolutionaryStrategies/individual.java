@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class individual implements Comparable<individual> {
     private Game game;
-    private int fitness;
+    private double fitness;
     private ArrayList<MOVE> moveSeq;
     public individual(Game game, int fitness, ArrayList<MOVE> moveSeq){
         this.game = game;
@@ -18,12 +18,12 @@ public class individual implements Comparable<individual> {
         this.moveSeq = moveSeq;
     }
     public int compareTo(individual otherDude){
-        return (Integer.compare(this.fitness, otherDude.fitness));
+        return (-1*(Double.compare(this.fitness, otherDude.fitness)));
     }
-    public void setFitness(int newFitness){
+    public void setFitness(double newFitness){
         fitness = newFitness;
     }
-    public int getFitness(){
+    public double getFitness(){
         return fitness;
     }
     public Game getGame(){

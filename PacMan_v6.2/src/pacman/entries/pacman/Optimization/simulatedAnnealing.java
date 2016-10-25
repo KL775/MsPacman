@@ -1,50 +1,52 @@
 package pacman.entries.pacman.Optimization;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
+import pacman.game.Constants;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+
+import java.util.Random;
 
 /**
  * Created by Kevin on 10/23/2016.
  *Always returns neutral for some reason
  */
 public class simulatedAnnealing extends Controller<MOVE> {
+    private double Temperature = 10000;
+    private double coolingRate = 0.03;
     public MOVE getMove(Game game, long timeDue) {
         return simulatedAnnealing(game);
     }
+
     private MOVE simulatedAnnealing(Game initState){
         //values selected at random temporarily
-        double Temperature = 10000;
-        double coolingRate = 0.03;
-        MOVE[] possibleMoves = MOVE.values();
-        Game currentState = initState;
-        Game nextState;
-        int highScore = currentState.getScore();
-        int currScore;
-        MOVE bestMove = MOVE.NEUTRAL;
-        while (true) {
-            if (Temperature < 1){
-                return bestMove;
-            }
-            int randomAdvanceMove = (int)Math.floor(Math.random()*5);
-            nextState = currentState;
-            nextState.advanceGame(possibleMoves[randomAdvanceMove], new StarterGhosts().getMove(currentState.copy(), -1));
-            currScore = nextState.getScore();
-            if (acceptanceProbability(highScore, currScore, Temperature) > Math.random()) {
-                bestMove = possibleMoves[randomAdvanceMove];
-                //System.out.println(bestMove+" made.");
-                highScore = currScore;
-                currentState = nextState; //advance state and prepare for testing again
-            }
-            Temperature *= 1-coolingRate;
+        Random randomGen = new Random();
+        nodeStates currentState = new nodeStates(initState);
+        int randIndex = randomGen.nextInt(currentState.getPossibleMoves().length);
+        MOVE randMove = currentState.getPossibleMoves()[randIndex];
+        Game advState = currentState.getCurrentState();
+        for (int i = 0; i < 4; ++i){
+            advState.advanceGame(randMove, new StarterGhosts().getMove(currentState.getCurrentState().copy(), -1));
         }
+        nodeStates nextState = new nodeStates(advState);
+        double energy =  currentState.evaluateCurrentState();
+        double newEnergy = nextState.evaluateCurrentState();
+        double prob = acceptanceProbability(energy, newEnergy,Temperature);
+        System.out.println("Current Energy " + energy);
+        System.out.println("New Energy " + newEnergy);
+        System.out.println("Evaluation probability " + prob);
+        Temperature *= 1-coolingRate;
+        if (prob > Math.random()){
+            return nextState.getCurrentState().getPacmanLastMoveMade();
+        }
+        return MOVE.NEUTRAL;
     }
 
-    private double acceptanceProbability(int oldScore, int newScore, double currentTemp){
-        //higher score = better
-        if (newScore > oldScore){
+    private double acceptanceProbability(double oldEnergy, double newEnergy, double currentTemp){
+        //higher energy is better
+        if (newEnergy > oldEnergy){
             return 1.0; //always perform this action
         }
-        return Math.exp((newScore-oldScore)/currentTemp); //give probability
+        return Math.exp((oldEnergy-newEnergy)/currentTemp); //give probability
     }
 }

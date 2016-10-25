@@ -6,70 +6,81 @@ import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.Random;
 
-
 /**
- * Created by Kevin on 10/23/2016.
+ * Created by Kevin on 10/24/2016.
  */
-public class EvoStrategy extends Controller<MOVE> {
+public class GeneticCrossover extends Controller<MOVE> {
     MOVE[] possibleMoves = MOVE.values();
-    int populationSizeDefault = 20;
-    int generations = 30;
+    int populationSizeDefault = 16;
+    int generations = 20;
 
     //Strategy, keep fit individuals, remove unfit individuals,
-    //mutate fit individuals by 4 action and add back to priority queue
+    //mate most fit individuals and create offspring
+    //do so by combining half of first sequence and half of second sequence and then mutate each index randomly
+    //remove unfit individuals
     //fitness == score
-    //action sequence will be 8
+    //action sequence will be 10
     public MOVE getMove(Game game, long timeDue) {
         PriorityQueue<individual> currentPopulation = new PriorityQueue<>();
-        ArrayList<individual> mutateMe = new ArrayList<>();
-        PriorityQueue<individual> dupePopulation = new PriorityQueue<>();
-        //create random individuals
+        PriorityQueue<individual> newPopulation = new PriorityQueue<>();
+        ArrayList<individual> theBad = new ArrayList<>();
+        ArrayList<individual> babyMakers = new ArrayList<>();
         for (int i = 0; i < populationSizeDefault; ++i) {
-            individual newBorn = new individual(game.copy(), 0, generateActions(20));
+            individual newBorn = new individual(game.copy(), 0, generateActions(10));
             currentPopulation.add(newBorn);
         }
-        //System.out.println(currentPopulation.size());
         for (int i = 0; i < generations; ++i) {
-            //advance generations
+            //advance generations and set up individual fitness
             for (individual Individuals : currentPopulation) {
                 Game currentGame = Individuals.getGame();
                 ArrayList<MOVE> indivMoves = Individuals.getMoveSeq();
                 for (MOVE move : indivMoves) {
                     //advance game by intended sequence
-                    for (int k = 0; k < 6; k++) {
-                        //look ahead 5 moves
-                        currentGame.advanceGame(move, new StarterGhosts().getMove(currentGame.copy(), -1));
-                    }
+                    currentGame.advanceGame(move, new StarterGhosts().getMove(currentGame.copy(), -1));
                 }
                 Individuals.setFitness(evaluateCurrentState(currentGame));
-                dupePopulation.add(Individuals);
+                newPopulation.add(Individuals);
+                theBad.add(Individuals);
             }
             currentPopulation.clear();
-            int newPopulationSize = 0;
-            for (int k = 0; k < populationSizeDefault / 4; k++) {
-                individual temp = dupePopulation.remove();
-                currentPopulation.add(temp);
-                mutateMe.add(temp);
-                newPopulationSize++;
+            int currentPopulationSize = 0;
+            for (int k = 0; k < populationSizeDefault / 4; k++){
+                individual nextToGo = newPopulation.remove();
+                currentPopulation.add(nextToGo);
+                babyMakers.add(nextToGo);
+                theBad.remove(nextToGo);
+                ++currentPopulationSize;
             }
-            while (newPopulationSize < populationSizeDefault) {
-                Random randomNum = new Random();
-                int randIndex = randomNum.nextInt(mutateMe.size());
-                individual mutating = mutateMe.get(randIndex);
-                ArrayList<MOVE> unmutatedSeq = mutating.getMoveSeq();
-                ArrayList<MOVE> mutatedSeq = mutateSequence(unmutatedSeq);
-                individual mutatedPerson = new individual(game.copy(), 0, mutatedSeq);
-                currentPopulation.add(mutatedPerson);
-                newPopulationSize += 1;
+
+            for (int j = 0; j < populationSizeDefault / 4; j++) {
+                Random randNum = new Random();
+                int randIndex = randNum.nextInt(theBad.size());
+                individual badKid = theBad.get(randIndex);
+                babyMakers.add(badKid);
+                newPopulation.add(badKid);
+                ++currentPopulationSize;
             }
-            mutateMe.clear(); //free up space to use mutateMe again
+            while(currentPopulationSize < populationSizeDefault){
+                Random randNum = new Random();
+                int randOne = randNum.nextInt(babyMakers.size());
+                int randTwo = randNum.nextInt(babyMakers.size());
+                while (randOne == randTwo){
+                    randOne = randNum.nextInt(babyMakers.size());
+                }
+                individual dad = babyMakers.get(randOne);
+                individual mom = babyMakers.get(randTwo);
+                ArrayList <MOVE> kidAndTheirMoves = mateSequence(dad.getMoveSeq(), mom.getMoveSeq());
+                individual kiddo = new individual(game.copy(), 0, kidAndTheirMoves);
+                ++currentPopulationSize;
+            }
+            //clear out for future use
+            babyMakers.clear();
+            theBad.clear();
         }
-        //return greatest score move sequence
-        return currentPopulation.remove().getMoveSeq().remove(0);
+        return currentPopulation.peek().getMoveSeq().remove(0);
     }
 
     public ArrayList<MOVE> generateActions(int seqLen) {
@@ -101,6 +112,17 @@ public class EvoStrategy extends Controller<MOVE> {
         return newActions;
     }
 
+    private ArrayList<MOVE> mateSequence(ArrayList<MOVE> dad, ArrayList<MOVE> mom) {
+        ArrayList<MOVE> child = new ArrayList<>();
+        for (int i = 0; i < dad.size(); ++i) {
+            if (i < dad.size() / 2) {
+                child.add(dad.get(i));
+            } else {
+                child.add(mom.get(i));
+            }
+        }
+        return child;
+    }
     public double evaluateCurrentState(Game currentState) {
         int GhostPanicDist = 200;
         int closestGhostDist = Integer.MAX_VALUE;
@@ -108,18 +130,17 @@ public class EvoStrategy extends Controller<MOVE> {
         int inactiveGhosts = 0;
         for (Constants.GHOST ghosts : Constants.GHOST.values()) {
             int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
-            if (currentState.getGhostEdibleTime(ghosts) > 0) {
+            if (currentState.getGhostEdibleTime(ghosts) > 0){
                 inactiveGhosts++;
-                if (closestGhostDist > currentDist) {
+                if (closestGhostDist > currentDist){
                     closestScaredGhostDist = currentDist;
-
-                } else {
+                }
+                else{
                     closestScaredGhostDist = closestGhostDist;
                 }
-                break;
-            }
-            if (closestGhostDist > currentDist) {
-                closestGhostDist = currentDist;
+                if (closestGhostDist > currentDist){
+                    closestGhostDist = currentDist;
+                }
             }
         }
         if (inactiveGhosts == 0) {

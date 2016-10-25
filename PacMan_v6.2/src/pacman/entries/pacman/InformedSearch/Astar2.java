@@ -2,10 +2,12 @@ package pacman.entries.pacman.InformedSearch;
 
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
+import pacman.game.Constants;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
+import java.util.Collections;
 import java.util.PriorityQueue;
 
 
@@ -14,41 +16,73 @@ import java.util.PriorityQueue;
  */
 public class Astar2 extends Controller<MOVE> {
     PriorityQueue<nodes> evaluatedtree = new PriorityQueue<>();
+    private int repeatLoop = 2;
 
+    public double evaluateCurrentState(Game currentState) {
+        int GhostPanicDist = 200;
+        int closestGhostDist = Integer.MAX_VALUE;
+        int closestScaredGhostDist = Integer.MAX_VALUE;
+        int inactiveGhosts = 0;
+        for (Constants.GHOST ghosts : Constants.GHOST.values()) {
+            int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
+            if (currentState.getGhostEdibleTime(ghosts) > 0) {
+                inactiveGhosts++;
+                if (closestGhostDist > currentDist) {
+                    closestScaredGhostDist = currentDist;
 
-    private int evaluateCurrentState(Game game) {
-        //calculate cost of path
-        int[] pillIndex = game.getActivePillsIndices();
-        int[] powPillIndex = game.getActivePillsIndices();
-        int currentPos = game.getPacmanCurrentNodeIndex();
-        PriorityQueue<Integer> distToPills = new PriorityQueue<>();
-        //prioritize power pills over pills
-        return 0;
+                }
+                else {
+                    closestScaredGhostDist = closestGhostDist;
+                }
+                break;
+            }
+            if ((closestGhostDist > currentDist)){
+                closestGhostDist = currentDist;
+            }
+        }
+        if (inactiveGhosts == 0) {
+            closestScaredGhostDist = 0;
+        }
+        if (inactiveGhosts == 4) {
+            closestGhostDist = 0;
+        }
+        if (closestGhostDist > GhostPanicDist) {
+            closestGhostDist = 0;
+        }
+        int pillsLeft = currentState.getNumberOfPills() - currentState.getNumberOfActivePills();
+        int powPillsLeft = currentState.getNumberOfPowerPills() - currentState.getNumberOfActivePowerPills();
+        double benefit = currentState.getScore() + -4 * closestGhostDist + 3 * closestScaredGhostDist + -2 * pillsLeft + -3.5 * powPillsLeft;
+        return -1*benefit;
     }
 
     public MOVE getMove(Game game, long timeDue) {
-        int currIter = 0;
+        int repeats = 0;
         nodes root = new nodes(game.copy(), null, null, 0, 0);
         evaluatedtree.add(root);
-        //4 is max iterations
-        for (; currIter < 4; ++currIter) {
-            nodes nodeParent = null;
-            nodes bestMove = evaluatedtree.remove();
-            for (MOVE move : MOVE.values()) {
-                Game temp = game.copy();
-                temp.advanceGame(move, new StarterGhosts().getMove(temp, -1));
-                int currCost = evaluateCurrentState(temp);
-                if (currIter != 0) {
-                    nodeParent = bestMove; //if we're not at root, make the most recent value on queue the parent
+        while (repeats < repeatLoop){
+            nodes parent = null;
+            nodes currentBestPath = evaluatedtree.remove();
+            repeats++;
+            for (MOVE moves : MOVE.values()) {
+                Game tempGame = game.copy();
+                for (int j = 0; j < 4; j++) {
+                    tempGame.advanceGame(moves, new StarterGhosts().getMove(game.copy(), -1));
                 }
-                nodes tempNode = new nodes(temp, move, nodeParent, bestMove.getCost() + currCost, currIter);
-                evaluatedtree.add(tempNode);
+                double costOfMove = evaluateCurrentState(tempGame);
+                if (repeats != 0) {
+                    parent = currentBestPath;
+                }
+                nodes child = new nodes(tempGame, moves, currentBestPath, currentBestPath.getCost()+costOfMove, repeats);
+                evaluatedtree.add(child);
             }
         }
-        nodes trueBest = evaluatedtree.remove(); //since queue is sorted, remove minimum cost node
-        while (trueBest.getDepth() > 1) {
-            trueBest = trueBest.getParent();
+        nodes bestPath = evaluatedtree.remove();
+        while (bestPath.getDepth() != repeatLoop) {
+           bestPath = evaluatedtree.remove();
         }
-        return trueBest.getMove();
+        for (int i = 0; i < repeatLoop - 1; i++) {
+            bestPath = bestPath.getParent();
+        }
+        return bestPath.getMove();
     }
 };

@@ -7,12 +7,12 @@ import pacman.game.Game;
  */
 public class nodes implements Comparable<nodes>{
     private int depth;
-    private int cost = 0;
+    private double cost = 0;
     private nodes parent;
     private Game game;
     private Constants.MOVE move;
 
-    public nodes(Game game, Constants.MOVE move, nodes parent, int cost, int depth){
+    public nodes(Game game, Constants.MOVE move, nodes parent, double cost, int depth){
         this.game = game;
         this.move = move;
         this.parent = parent;
@@ -21,11 +21,11 @@ public class nodes implements Comparable<nodes>{
     }
 
     public int compareTo(nodes other) {
-        return Integer.compare(this.cost, other.cost);
+        return Double.compare(this.cost, other.cost);
     }
     //our comparison will be based on nodes cost, used for priority queue
 
-    public int getCost(){
+    public double getCost(){
         return cost;
     }
     public int getDepth(){
