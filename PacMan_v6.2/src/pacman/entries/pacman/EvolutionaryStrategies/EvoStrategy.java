@@ -111,7 +111,7 @@ public class EvoStrategy extends Controller<MOVE> {
             int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
             if (currentState.getGhostEdibleTime(ghosts) > 0) {
                 if (currentDist < closestScaredGhostDist){
-                    closestGhostDist = currentDist;
+                    closestScaredGhostDist = currentDist;
                 }
             }
             else{
@@ -132,6 +132,6 @@ public class EvoStrategy extends Controller<MOVE> {
         System.out.println(closestGhostDist);
         int pillsLeft = currentState.getNumberOfPills() - currentState.getNumberOfActivePills();
         int powPillsLeft = currentState.getNumberOfPowerPills() - currentState.getNumberOfActivePowerPills();
-        return (currentState.getScore() + -6 * closestGhostDist + 6 * closestScaredGhostDist + -2 * pillsLeft + -3.5 * powPillsLeft)*currentState.getPacmanNumberOfLivesRemaining();
+        return (currentState.getScore() + -6 * closestGhostDist + 6 * closestScaredGhostDist + -2 * pillsLeft + -3.5 * powPillsLeft);
     }
 };
