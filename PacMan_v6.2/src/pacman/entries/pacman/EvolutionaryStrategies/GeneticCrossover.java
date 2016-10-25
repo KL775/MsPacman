@@ -13,9 +13,9 @@ import java.util.Random;
  * Created by Kevin on 10/24/2016.
  */
 public class GeneticCrossover extends Controller<MOVE> {
-    MOVE[] possibleMoves = MOVE.values();
-    int populationSizeDefault = 16;
-    int generations = 20;
+    private MOVE[] possibleMoves = MOVE.values();
+    private int populationSizeDefault = 20;
+    private int generations = 20;
 
     //Strategy, keep fit individuals, remove unfit individuals,
     //mate most fit individuals and create offspring
@@ -24,14 +24,15 @@ public class GeneticCrossover extends Controller<MOVE> {
     //fitness == score
     //action sequence will be 10
     public MOVE getMove(Game game, long timeDue) {
+        Random randNum = new Random();
         PriorityQueue<individual> currentPopulation = new PriorityQueue<>();
         PriorityQueue<individual> newPopulation = new PriorityQueue<>();
-        ArrayList<individual> theBad = new ArrayList<>();
         ArrayList<individual> babyMakers = new ArrayList<>();
         for (int i = 0; i < populationSizeDefault; ++i) {
             individual newBorn = new individual(game.copy(), 0, generateActions(10));
             currentPopulation.add(newBorn);
         }
+
         for (int i = 0; i < generations; ++i) {
             //advance generations and set up individual fitness
             for (individual Individuals : currentPopulation) {
@@ -39,32 +40,24 @@ public class GeneticCrossover extends Controller<MOVE> {
                 ArrayList<MOVE> indivMoves = Individuals.getMoveSeq();
                 for (MOVE move : indivMoves) {
                     //advance game by intended sequence
-                    currentGame.advanceGame(move, new StarterGhosts().getMove(currentGame.copy(), -1));
+                    for (int j = 0; j < 5; j++) {
+                        //advance by 4
+                        currentGame.advanceGame(move, new StarterGhosts().getMove(currentGame.copy(), -1));
+                    }
                 }
                 Individuals.setFitness(evaluateCurrentState(currentGame));
                 newPopulation.add(Individuals);
-                theBad.add(Individuals);
             }
             currentPopulation.clear();
             int currentPopulationSize = 0;
-            for (int k = 0; k < populationSizeDefault / 4; k++){
+            for (int k = 0; k < populationSizeDefault / 2; k++){
                 individual nextToGo = newPopulation.remove();
                 currentPopulation.add(nextToGo);
                 babyMakers.add(nextToGo);
-                theBad.remove(nextToGo);
-                ++currentPopulationSize;
+                currentPopulationSize++;
             }
 
-            for (int j = 0; j < populationSizeDefault / 4; j++) {
-                Random randNum = new Random();
-                int randIndex = randNum.nextInt(theBad.size());
-                individual badKid = theBad.get(randIndex);
-                babyMakers.add(badKid);
-                newPopulation.add(badKid);
-                ++currentPopulationSize;
-            }
             while(currentPopulationSize < populationSizeDefault){
-                Random randNum = new Random();
                 int randOne = randNum.nextInt(babyMakers.size());
                 int randTwo = randNum.nextInt(babyMakers.size());
                 while (randOne == randTwo){
@@ -74,11 +67,10 @@ public class GeneticCrossover extends Controller<MOVE> {
                 individual mom = babyMakers.get(randTwo);
                 ArrayList <MOVE> kidAndTheirMoves = mateSequence(dad.getMoveSeq(), mom.getMoveSeq());
                 individual kiddo = new individual(game.copy(), 0, kidAndTheirMoves);
-                ++currentPopulationSize;
+                currentPopulationSize++;
             }
             //clear out for future use
             babyMakers.clear();
-            theBad.clear();
         }
         return currentPopulation.peek().getMoveSeq().remove(0);
     }

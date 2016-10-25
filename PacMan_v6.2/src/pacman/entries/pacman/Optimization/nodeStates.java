@@ -39,6 +39,7 @@ public class nodeStates {
             int currentDist = currentState.getManhattanDistance(currentState.getPacmanCurrentNodeIndex(), currentState.getGhostCurrentNodeIndex(ghosts));
             if (currentState.getGhostEdibleTime(ghosts) > 0) {
                 if (currentDist < closestScaredGhostDist){
+                    inactiveGhosts++;
                     closestGhostDist = currentDist;
                 }
                 break;
